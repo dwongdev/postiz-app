@@ -38,7 +38,7 @@ export class PostsController {
     private _starsService: StarsService,
     private _messagesService: MessagesService,
     private _agentGraphService: AgentGraphService,
-    private _shortLinkService: ShortLinkService
+    private _shortLinkService: ShortLinkService,
   ) {}
 
   @Get('/:id/statistics')
@@ -178,5 +178,13 @@ export class PostsController {
     @Body('date') date: string
   ) {
     return this._postsService.changeDate(org.id, id, date);
+  }
+
+  @Post('/separate-posts')
+  async separatePosts(
+    @GetOrgFromRequest() org: Organization,
+    @Body() body: { content: string, len: number }
+  ) {
+    return this._postsService.separatePosts(body.content, body.len);
   }
 }

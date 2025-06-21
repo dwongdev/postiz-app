@@ -15,7 +15,7 @@ import {
 import { Type } from 'class-transformer';
 import { DevToSettingsDto } from '@gitroom/nestjs-libraries/dtos/posts/providers-settings/dev.to.settings.dto';
 import { MediaDto } from '@gitroom/nestjs-libraries/dtos/media/media.dto';
-import { AllProvidersSettings } from '@gitroom/nestjs-libraries/dtos/posts/providers-settings/all.providers.settings';
+import { type AllProvidersSettings } from '@gitroom/nestjs-libraries/dtos/posts/providers-settings/all.providers.settings';
 import { MediumSettingsDto } from '@gitroom/nestjs-libraries/dtos/posts/providers-settings/medium.settings.dto';
 import { HashnodeSettingsDto } from '@gitroom/nestjs-libraries/dtos/posts/providers-settings/hashnode.settings.dto';
 import { RedditSettingsDto } from '@gitroom/nestjs-libraries/dtos/posts/providers-settings/reddit.dto';
@@ -26,6 +26,7 @@ import { TikTokDto } from '@gitroom/nestjs-libraries/dtos/posts/providers-settin
 import { DiscordDto } from '@gitroom/nestjs-libraries/dtos/posts/providers-settings/discord.dto';
 import { SlackDto } from '@gitroom/nestjs-libraries/dtos/posts/providers-settings/slack.dto';
 import { LemmySettingsDto } from '@gitroom/nestjs-libraries/dtos/posts/lemmy.dto';
+import { XDto } from '@gitroom/nestjs-libraries/dtos/posts/providers-settings/x.dto';
 
 export class EmptySettings {}
 export class Integration {
@@ -85,6 +86,7 @@ export class Post {
         { value: TikTokDto, name: 'tiktok' },
         { value: DiscordDto, name: 'discord' },
         { value: SlackDto, name: 'slack' },
+        { value: XDto, name: 'x' },
       ],
     },
   })

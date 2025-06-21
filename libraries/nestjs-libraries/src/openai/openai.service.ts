@@ -12,6 +12,10 @@ const PicturePrompt = z.object({
   prompt: z.string(),
 });
 
+const VoicePrompt = z.object({
+  voice: z.string(),
+});
+
 @Injectable()
 export class OpenaiService {
   async generateImage(prompt: string, isUrl: boolean) {
@@ -44,6 +48,27 @@ export class OpenaiService {
           response_format: zodResponseFormat(PicturePrompt, 'picturePrompt'),
         })
       ).choices[0].message.parsed?.prompt || ''
+    );
+  }
+
+  async generateVoiceFromText(prompt: string) {
+    return (
+      (
+        await openai.beta.chat.completions.parse({
+          model: 'gpt-4.1',
+          messages: [
+            {
+              role: 'system',
+              content: `You are an assistant that takes a social media post and convert it to a normal human voice, to be later added to a character, when a person talk they don\'t use "-", and sometimes they add pause with "..." to make it sounds more natural, make sure you use a lot of pauses and make it sound like a real person`,
+            },
+            {
+              role: 'user',
+              content: `prompt: ${prompt}`,
+            },
+          ],
+          response_format: zodResponseFormat(VoicePrompt, 'voice'),
+        })
+      ).choices[0].message.parsed?.voice || ''
     );
   }
 
@@ -124,5 +149,79 @@ export class OpenaiService {
     const { content: articleContent } = websiteContent.choices[0].message;
 
     return this.generatePosts(articleContent!);
+  }
+
+  async separatePosts(content: string, len: number) {
+    const SeparatePostsPrompt = z.object({
+      posts: z.array(z.string()),
+    });
+
+    const SeparatePostPrompt = z.object({
+      post: z.string().max(len),
+    });
+
+    const posts =
+      (
+        await openai.beta.chat.completions.parse({
+          model: 'gpt-4.1',
+          messages: [
+            {
+              role: 'system',
+              content: `You are an assistant that take a social media post and break it to a thread, each post must be minimum ${
+                len - 10
+              } and maximum ${len} characters, keeping the exact wording and break lines, however make sure you split posts based on context`,
+            },
+            {
+              role: 'user',
+              content: content,
+            },
+          ],
+          response_format: zodResponseFormat(
+            SeparatePostsPrompt,
+            'separatePosts'
+          ),
+        })
+      ).choices[0].message.parsed?.posts || [];
+
+    return {
+      posts: await Promise.all(
+        posts.map(async (post) => {
+          if (post.length <= len) {
+            return post;
+          }
+
+          let retries = 4;
+          while (retries) {
+            try {
+              return (
+                (
+                  await openai.beta.chat.completions.parse({
+                    model: 'gpt-4.1',
+                    messages: [
+                      {
+                        role: 'system',
+                        content: `You are an assistant that take a social media post and shrink it to be maximum ${len} characters, keeping the exact wording and break lines`,
+                      },
+                      {
+                        role: 'user',
+                        content: post,
+                      },
+                    ],
+                    response_format: zodResponseFormat(
+                      SeparatePostPrompt,
+                      'separatePost'
+                    ),
+                  })
+                ).choices[0].message.parsed?.post || ''
+              );
+            } catch (e) {
+              retries--;
+            }
+          }
+
+          return post;
+        })
+      ),
+    };
   }
 }
